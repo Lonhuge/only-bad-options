@@ -1,0 +1,6 @@
+# local backups & dev artifacts (not needed for the live site)
+images/_orig/
+images/_white/
+__pycache__/
+*.pyc
+.DS_Store

@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ONLY BAD OPTIONS — easy easy</title>
+<style>
+  /* ============================================================
+     FONT — Sequel 100 Black (commercial, OGJ Type Design)
+     Drop your licensed webfont file into  fonts/  and it loads.
+     Until then it falls back to a heavy grotesque.
+     ============================================================ */
+  @font-face{
+    font-family:"Sequel 100 Black";
+    src:url("fonts/Sequel100Black.woff2") format("woff2"),
+        url("fonts/Sequel100Black.woff")  format("woff");
+    font-weight:900;
+    font-display:swap;
+  }
+
+  :root{
+    --bg:#ffffff;
+    --panel:#f4f3ef;
+    --ink:#0d0d0d;
+    --muted:#6d6d66;
+    --line:rgba(0,0,0,.13);
+    --line-strong:rgba(0,0,0,.30);
+    --accent:#ff2e88;           /* the easy easy print pink */
+    --maxw:1320px;
+    --display:"Sequel 100 Black","Arial Black","Helvetica Neue",Impact,sans-serif;
+    --mono:ui-monospace,"SF Mono","Roboto Mono",Menlo,Consolas,monospace;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.45;font-size:15px}
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 26px}
+
+  /* announcement */
+  .announce{background:#000;color:#fff;text-align:center;font-family:var(--mono);
+    font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:10px 16px;border-bottom:1px solid var(--line)}
+
+  /* header */
+  header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.88);backdrop-filter:saturate(160%) blur(12px);border-bottom:1px solid var(--line)}
+  .bar{display:flex;align-items:center;gap:34px;height:70px}
+  .logo{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+  .mono-badge{width:42px;height:42px;border:1.5px solid var(--ink);display:grid;place-items:center;
+    font-family:var(--display);font-size:13px;letter-spacing:-.02em;transform:skewX(-9deg)}
+  .mono-badge span{transform:skewX(9deg)}
+  .logo-img{height:52px;width:auto;display:block}
+  .logo-img.foot{height:78px;margin-bottom:16px}
+  .word{font-family:var(--display);font-size:15px;letter-spacing:.01em;line-height:.98;text-transform:uppercase}
+  .word small{display:block;font-family:var(--mono);font-weight:400;font-size:9px;letter-spacing:.16em;color:var(--muted);margin-top:3px}
+  nav.main{display:flex;align-items:center;gap:24px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+  nav.main a{position:relative;padding:6px 0;color:#3a3a36;transition:color .15s}
+  nav.main a:hover{color:#000}
+  nav.main a::after{content:"";position:absolute;left:0;bottom:0;height:1.5px;width:0;background:var(--accent);transition:width .2s}
+  nav.main a:hover::after{width:100%}
+  .caret::after{content:"▾";margin-left:5px;font-size:10px;position:static;background:none}
+  /* shop dropdown */
+  .shopmenu{position:relative;display:flex;align-items:center}
+  .dropdown{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(6px);
+    background:var(--bg);border:1px solid var(--ink);min-width:180px;padding:5px 0;opacity:0;visibility:hidden;
+    transition:opacity .15s,transform .15s;z-index:60}
+  .shopmenu:hover .dropdown,.shopmenu:focus-within .dropdown{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+  .dropdown a{display:block;padding:9px 18px;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;
+    text-transform:uppercase;color:#333;white-space:nowrap;cursor:pointer}
+  .dropdown a::after{content:none}
+  .dropdown a:hover{background:var(--ink);color:#fff}
+  .tools{margin-left:auto;display:flex;align-items:center;gap:18px}
+  .icn{width:19px;height:19px;stroke:var(--ink);stroke-width:1.6;fill:none;cursor:pointer;transition:opacity .15s}
+  .icn:hover{opacity:.6}
+  .cartwrap{position:relative}
+  .cartcount{position:absolute;top:-7px;right:-9px;background:var(--accent);color:#000;font-family:var(--mono);font-size:9px;font-weight:700;
+    min-width:15px;height:15px;border-radius:9px;display:grid;place-items:center;padding:0 3px}
+  .burger{display:none}
+
+  /* tickets / tour */
+  .tour .seclabel{align-items:center}
+  .tourtag{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .tourlist{border-top:1px solid var(--ink)}
+  .tourrow{display:grid;grid-template-columns:118px 1fr 1fr 120px;gap:16px;align-items:center;padding:15px 6px;border-bottom:1px solid var(--ink)}
+  .tdate{font-family:var(--mono);font-size:12px;letter-spacing:.03em}
+  .tcity{font-family:var(--display);text-transform:uppercase;font-size:17px;letter-spacing:-.01em}
+  .tcity em{font-family:var(--mono);font-size:10px;font-style:normal;color:var(--muted);margin-left:7px;vertical-align:middle}
+  .tven{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .tbtn{justify-self:end;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    padding:9px 20px;background:var(--ink);color:var(--bg);transition:background .15s,color .15s}
+  .tbtn:hover{background:var(--accent);color:#fff}
+
+  /* hero */
+  .hero{position:relative;height:min(80vh,700px);min-height:440px;overflow:hidden;background:#000}
+  .hero img{width:100%;height:100%;object-fit:cover;object-position:center 30%}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(255,255,255,.55) 78%,rgba(255,255,255,1) 100%)}
+  .hero .cta{position:absolute;left:0;right:0;bottom:0;z-index:3;padding-bottom:46px}
+  .hero .cta .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#1a1a1a;margin-bottom:14px}
+  .hero .cta h1{font-family:var(--display);text-transform:uppercase;line-height:.86;letter-spacing:-.02em;
+    font-size:clamp(40px,8vw,104px);margin-bottom:22px}
+  .btn{display:inline-block;background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+    padding:15px 30px;border:0;cursor:pointer;transition:transform .12s,background .15s}
+  .btn:hover{background:var(--accent);color:#fff;transform:translateY(-1px)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line-strong)}
+  .btn.ghost:hover{background:var(--ink);color:#000;border-color:var(--ink)}
+
+  /* sections */
+  section.block{padding:60px 0 0}
+  .seclabel{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px}
+  .seclabel h2{font-family:var(--display);font-size:clamp(20px,3.2vw,30px);text-transform:uppercase;letter-spacing:-.01em}
+  .seclabel a{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line-strong);padding-bottom:3px;transition:color .15s}
+  .seclabel a:hover{color:#fff}
+
+  /* ===== the grid ===== */
+  .grid{display:grid;gap:0;border-top:1px solid var(--ink);border-left:1px solid var(--ink)}
+  .grid.g4{grid-template-columns:repeat(4,1fr)}
+  .grid.g5{grid-template-columns:repeat(5,1fr)}
+  .card{background:var(--bg);cursor:pointer;display:flex;flex-direction:column;transition:background .2s;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+  .card:hover{background:#faf9f6}
+  .thumb{position:relative;aspect-ratio:1/1;overflow:hidden;background:#fff}
+  .thumb img{width:100%;height:100%;object-fit:contain;transition:transform .4s ease}
+  .card:hover .thumb img{transform:scale(1.035)}
+  .tag{position:absolute;top:10px;left:10px;background:var(--ink);color:var(--bg);font-family:var(--mono);
+    font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px}
+  .tag.sold{background:transparent;color:var(--ink);border:1px solid var(--line-strong)}
+  .tag.pink{background:var(--accent);color:#fff}
+  .meta{padding:14px 14px 18px;border-top:1px solid var(--ink)}
+  .brand{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  .pname{font-family:var(--display);font-size:15px;text-transform:uppercase;letter-spacing:.005em;line-height:1.05;margin-bottom:10px;min-height:2.1em}
+  .sizes{display:flex;gap:8px;font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:9px;flex-wrap:wrap}
+  .price{font-family:var(--mono);font-size:13px;letter-spacing:.02em}
+
+  /* newsletter */
+  .news{margin-top:64px;border-top:1px solid var(--ink);background:var(--panel)}
+  .news .inner{max-width:540px;margin:0 auto;text-align:center;padding:60px 24px 66px}
+  .news .newslogo{width:150px;height:auto;margin:0 auto 18px;display:block;animation:wob 4s ease-in-out infinite}
+  @keyframes wob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+  .news h2{font-family:var(--display);font-size:clamp(24px,4.6vw,40px);text-transform:uppercase;letter-spacing:-.01em;line-height:.95;margin-bottom:12px}
+  .news h2 .heart{color:var(--accent);-webkit-text-stroke:0}
+  .news p{color:var(--muted);font-size:14px;max-width:40ch;margin:0 auto 24px;line-height:1.55}
+  .nform{display:flex;max-width:410px;margin:0 auto;background:var(--bg);border:1.5px solid var(--ink);
+    border-radius:999px;padding:5px 5px 5px 4px;box-shadow:4px 4px 0 var(--ink)}
+  .nform input{flex:1;background:transparent;border:0;color:var(--ink);padding:12px 20px;font-family:var(--mono);font-size:13px;outline:none}
+  .nform input::placeholder{color:#a7a79f}
+  .nform button{background:var(--accent);color:#fff;border:0;padding:0 24px;border-radius:999px;font-family:var(--mono);
+    font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:transform .12s,background .15s;white-space:nowrap}
+  .nform button:hover{background:var(--ink);transform:scale(1.04)}
+  .news .fine{margin-top:16px;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);padding:56px 0 30px;background:var(--bg)}
+  .fgrid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:30px;margin-bottom:44px}
+  .fcol h4{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:15px}
+  .fcol a{display:block;font-size:13.5px;color:#3a3a36;padding:5px 0;transition:color .15s}
+  .fcol a:hover{color:#000}
+  .fabout .mono-badge{margin-bottom:15px}
+  .fabout p{font-size:13px;color:var(--muted);max-width:36ch;line-height:1.6}
+  .fbottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;
+    padding-top:22px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .fbottom select{font-family:var(--mono);font-size:11px;border:1px solid var(--line);background:var(--bg);color:#3a3a36;padding:7px 9px}
+
+  @media(max-width:1000px){
+    .grid.g4{grid-template-columns:repeat(3,1fr)}
+    .grid.g5{grid-template-columns:repeat(3,1fr)}
+    .fgrid{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:640px){
+    .wrap{padding:0 16px}
+    nav.main,.tools .icn.search{display:none}
+    .burger{display:block}
+    .tourrow{grid-template-columns:1fr auto;row-gap:2px;column-gap:14px}
+    .tdate{grid-column:1}.tcity{grid-column:1}.tven{grid-column:1}
+    .tbtn{grid-column:2;grid-row:1/4;align-self:center}
+    .grid.g4,.grid.g5{grid-template-columns:repeat(2,1fr)}
+    .pname{font-size:13px}
+  }
+</style>
+</head>
+<body>
+
+<div class="announce">Newsletter abonnieren — 10&nbsp;% auf die erste Bestellung + monatliche easy&nbsp;easy Playlist</div>
+
+<header>
+  <div class="wrap bar">
+    <a class="logo" href="#" aria-label="Only Bad Options — Start">
+      <img class="logo-img" src="images/logo.png" alt="Only Bad Options">
+    </a>
+    <nav class="main">
+      <a href="#">start</a>
+      <div class="shopmenu">
+        <a href="#shop" class="caret">shop</a>
+        <div class="dropdown">
+          <a data-filter="all" href="#shop">alle produkte</a>
+          <a data-filter="shirts" href="#shop">shirts</a>
+          <a data-filter="vinyl" href="#shop">vinyl / cd</a>
+          <a data-filter="posters" href="#shop">poster</a>
+          <a data-filter="apparel" href="#shop">apparel</a>
+        </div>
+      </div>
+      <a href="#tickets">tickets</a>
+      <a href="#social">social</a>
+      <a href="#kontakt">kontakt</a>
+    </nav>
+    <div class="tools">
+      <svg class="icn search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+      <div class="cartwrap">
+        <svg class="icn" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+        <span class="cartcount">0</span>
+      </div>
+      <svg class="icn burger" viewBox="0 0 24 24"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>
+    </div>
+  </div>
+</header>
+
+<div class="hero">
+  <img src="images/hero.jpg" alt="easy easy — only bad options">
+  <div class="cta">
+    <div class="wrap">
+      <div class="kicker">Alles so leid · Tour 2025 — neue Kollektion online</div>
+      <a class="btn" href="#shop">jetzt shoppen</a>
+    </div>
+  </div>
+</div>
+
+<main class="wrap" id="shop">
+
+  <section class="block" id="merch">
+    <div class="seclabel"><h2>featured</h2><a href="#">alle ansehen</a></div>
+    <div class="grid g4">
+
+      <a class="card" data-cat="shirts" href="product.html?p=shirt-easy">
+        <div class="thumb"><span class="tag pink">neu</span><img src="images/shirt-easy.jpg" alt="T-Shirt easy easy"></div>
+        <div class="meta">
+          <div class="pname">T-Shirt „easy easy“</div>
+          <div class="sizes"><span>S</span><span>M</span><span>L</span><span>XL</span></div>
+          <div class="price">26,00&nbsp;€</div>
+        </div>
+      </a>
+
+      <a class="card" data-cat="vinyl" href="product.html?p=vinyl-lp">
+        <div class="thumb"><img src="images/vinyl-lp.jpg" alt="Vinyl easy easy LP" class="contain"></div>
+        <div class="meta">
+          <div class="pname">Vinyl „easy easy“ (LP)</div>
+          <div class="sizes"><span>12" · Limited</span></div>
+          <div class="price">36,00&nbsp;€</div>
+        </div>
+      </a>
+
+      <a class="card" data-cat="posters" href="product.html?p=poster-asl">
+        <div class="thumb"><img src="images/poster-asl.jpg" alt="Poster Alles so leid Tour 2025"></div>
+        <div class="meta">
+          <div class="pname">Poster „Alles so leid“ 2025</div>
+          <div class="sizes"><span>50 × 70 cm</span></div>
+          <div class="price">6,00&nbsp;€</div>
+        </div>
+      </a>
+
+      <a class="card" data-cat="apparel" href="product.html?p=cap">
+        <div class="thumb"><span class="tag sold">ausverkauft</span><img src="images/cap.jpg" alt="Vintage Cap easy easy" class="contain"></div>
+        <div class="meta">
+          <div class="pname">Vintage Cap „easy easy“</div>
+          <div class="sizes"><span>One Size</span></div>
+          <div class="price">26,00&nbsp;€</div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <section class="block" id="vinyl">
+    <div class="seclabel"><h2>latest items</h2><a href="#">mehr anzeigen</a></div>
+    <div class="grid g5">
+
+      <a class="card" data-cat="shirts" href="product.html?p=shirt-dino">
+        <div class="thumb"><img src="images/shirt-dino.jpg" alt="T-Shirt Dino"></div>
+        <div class="meta">
+          <div class="pname">T-Shirt „Dino“</div>
+          <div class="sizes"><span>S</span><span>M</span><span>L</span><span>XL</span></div>
+          <div class="price">26,00&nbsp;€</div>
+        </div>
+      </a>
+
+      <a class="card" data-cat="vinyl" href="product.html?p=vinyl-ep">
+        <div class="thumb"><img src="images/vinyl-ep.jpg" alt="Echoes Vol. 1 & 2 EP" class="contain"></div>
+        <div class="meta">
+          <div class="pname">Echoes Vol.&nbsp;1&nbsp;&&nbsp;2 (EP)</div>
+          <div class="sizes"><span>12" · EP</span></div>
+          <div class="price">31,00&nbsp;€</div>
+        </div>
+      </a>
+
+      <a class="card" data-cat="vinyl" href="product.html?p=cd">
+        <div class="thumb"><img src="images/cd.jpg" alt="CD easy easy Deluxe" class="contain"></div>
+        <div class="meta">
+          <div class="pname">CD „easy easy“ Deluxe</div>
+          <div class="sizes"><span>CD · Digipak</span></div>
+          <div class="price">11,00&nbsp;€</div>
+        </div>
+      </a>
+
+      <a class="card" data-cat="apparel" href="product.html?p=schal">
+        <div class="thumb"><img src="images/schal.jpg" alt="Schal EASY" class="contain"></div>
+        <div class="meta">
+          <div class="pname">Schal „EASY“</div>
+          <div class="sizes"><span>One Size</span></div>
+          <div class="price">19,00&nbsp;€</div>
+        </div>
+      </a>
+
+      <a class="card" data-cat="posters" href="product.html?p=poster-luxor">
+        <div class="thumb"><img src="images/poster-luxor.jpg" alt="Poster Luxor 2022"></div>
+        <div class="meta">
+          <div class="pname">Poster „Luxor 2022“</div>
+          <div class="sizes"><span>50 × 70 cm</span></div>
+          <div class="price">6,00&nbsp;€</div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <section class="block tour" id="tickets">
+    <div class="seclabel"><h2>tickets</h2><span class="tourtag">Alles so leid · Tour 2025</span></div>
+    <div class="tourlist">
+      <div class="tourrow"><span class="tdate">25 Sep 2025</span><span class="tcity">Winterthur <em>CH</em></span><span class="tven">Albani</span><a class="tbtn" href="#">Tickets</a></div>
+      <div class="tourrow"><span class="tdate">26 Sep 2025</span><span class="tcity">Aarau <em>CH</em></span><span class="tven">Kiff</span><a class="tbtn" href="#">Tickets</a></div>
+      <div class="tourrow"><span class="tdate">05 Nov 2025</span><span class="tcity">Köln <em>DE</em></span><span class="tven">Gebäude 9</span><a class="tbtn" href="#">Tickets</a></div>
+      <div class="tourrow"><span class="tdate">06 Nov 2025</span><span class="tcity">Berlin <em>DE</em></span><span class="tven">Cassiopeia</span><a class="tbtn" href="#">Tickets</a></div>
+      <div class="tourrow"><span class="tdate">07 Nov 2025</span><span class="tcity">Leipzig <em>DE</em></span><span class="tven">Naumanns</span><a class="tbtn" href="#">Tickets</a></div>
+      <div class="tourrow"><span class="tdate">08 Nov 2025</span><span class="tcity">Passau <em>DE</em></span><span class="tven">Zauberberg</span><a class="tbtn" href="#">Tickets</a></div>
+      <div class="tourrow"><span class="tdate">09 Nov 2025</span><span class="tcity">München <em>DE</em></span><span class="tven">Substanz</span><a class="tbtn" href="#">Tickets</a></div>
+      <div class="tourrow"><span class="tdate">11 Nov 2025</span><span class="tcity">Hamburg <em>DE</em></span><span class="tven">Nochtspeicher</span><a class="tbtn" href="#">Tickets</a></div>
+      <div class="tourrow"><span class="tdate">12 Nov 2025</span><span class="tcity">Bremen <em>DE</em></span><span class="tven">Tower</span><a class="tbtn" href="#">Tickets</a></div>
+      <div class="tourrow"><span class="tdate">13 Nov 2025</span><span class="tcity">Göttingen <em>DE</em></span><span class="tven">Nörgelbuff</span><a class="tbtn" href="#">Tickets</a></div>
+      <div class="tourrow"><span class="tdate">14 Nov 2025</span><span class="tcity">Münster <em>DE</em></span><span class="tven">Gleis 22</span><a class="tbtn" href="#">Tickets</a></div>
+      <div class="tourrow"><span class="tdate">15 Nov 2025</span><span class="tcity">Stuttgart <em>DE</em></span><span class="tven">Clubcann</span><a class="tbtn" href="#">Tickets</a></div>
+    </div>
+  </section>
+
+</main>
+
+<section class="news">
+  <div class="inner">
+    <img class="newslogo" src="images/logo.png" alt="Only Bad Options">
+    <h2>Easy Writer</h2>
+    <p>10&nbsp;% auf deine erste Bestellung, geheime Drops &amp; die monatliche easy&nbsp;easy Playlist — direkt in dein Postfach.</p>
+    <form class="nform" onsubmit="return false">
+      <input type="email" placeholder="deine@email.de" aria-label="E-Mail">
+      <button type="submit">let’s go</button>
+    </form>
+    <div class="fine">kein spam · nur gute vibes ✿</div>
+  </div>
+</section>
+
+<footer id="kontakt">
+  <div class="wrap">
+    <div class="fgrid">
+      <div class="fcol fabout">
+        <img class="logo-img foot" src="images/logo.png" alt="Only Bad Options">
+      </div>
+      <div class="fcol">
+        <h4>Shop</h4>
+        <a href="#">Alle Produkte</a>
+        <a href="#">T-Shirts</a>
+        <a href="#">Caps &amp; Schals</a>
+        <a href="#">Vinyl &amp; CDs</a>
+        <a href="#">Poster</a>
+      </div>
+      <div class="fcol">
+        <h4>Info</h4>
+        <a href="#">Versand &amp; Rückgabe</a>
+        <a href="#">Kontakt</a>
+        <a href="#">Impressum</a>
+        <a href="#">Datenschutz</a>
+        <a href="#">AGB</a>
+      </div>
+      <div class="fcol" id="social">
+        <h4>Folgen</h4>
+        <a href="#">Instagram</a>
+        <a href="#">Spotify</a>
+        <a href="#">YouTube</a>
+        <a href="#">Newsletter</a>
+      </div>
+    </div>
+    <div class="fbottom">
+      <span>© 2026 Only Bad Options</span>
+      <select aria-label="Land"><option>Deutschland (€ EUR)</option><option>Österreich (€ EUR)</option><option>Schweiz (CHF)</option></select>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var links=document.querySelectorAll('.dropdown a[data-filter]');
+  var cards=document.querySelectorAll('.card[data-cat]');
+  var secs=document.querySelectorAll('main section.block');
+  links.forEach(function(l){
+    l.addEventListener('click',function(e){
+      e.preventDefault();
+      var f=l.getAttribute('data-filter');
+      cards.forEach(function(c){
+        c.style.display=(f==='all'||c.getAttribute('data-cat')===f)?'':'none';
+      });
+      secs.forEach(function(s){
+        var cs=s.querySelectorAll('.card[data-cat]');
+        if(!cs.length) return;
+        var any=[].some.call(cs,function(c){return c.style.display!=='none';});
+        s.style.display=any?'':'none';
+      });
+      var shop=document.getElementById('shop');
+      if(shop) shop.scrollIntoView({behavior:'smooth'});
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
