@@ -126,7 +126,7 @@
         <div class="plabel" id="sizelabel">Größe</div>
         <div class="psizes" id="psizes"></div>
       </div>
-      <button class="addbtn" id="addbtn">jetzt kaufen</button>
+      <button class="addbtn" id="addbtn">in den warenkorb</button>
       <div class="paypal">Sichere Zahlung über <b>SumUp</b> · Karte &amp; Wallets · Versand aus Köln</div>
       <div class="pdesc" id="pdesc"></div>
       <ul class="pdetails" id="pdetails"></ul>
@@ -150,6 +150,7 @@
   </div>
 </footer>
 
+<script src="cart.js"></script>
 <script>
 const P = {
   "shirt-easy":{name:'T-Shirt „easy easy“',price:'26,00 €',cat:'T-Shirts',img:'images/shirt-easy.jpg',sizes:['S','M','L','XL'],sizeLabel:'Größe',
@@ -183,26 +184,6 @@ const P = {
 const order = Object.keys(P);
 const id = new URLSearchParams(location.search).get('p');
 const p = P[id] || P[order[0]];
-
-/* ══════════════════════════════════════════════════════════════════
-   SUMUP CHECKOUT — paste each product's SumUp Payment Link URL here.
-   How to get them: SumUp App → „+" → Betrag + Artikel eingeben →
-   Zahlungsart „Zahlungslink/Payment Link" → Link kopieren.
-   (Looks like  https://pay.sumup.com/b2c/XXXXXXXX )
-   Leave "" until you have it → button shows „Bezahllink folgt".
-   ══════════════════════════════════════════════════════════════════ */
-const SUMUP = {
-  "shirt-easy":   "",
-  "shirt-dino":   "",
-  "vinyl-lp":     "",
-  "vinyl-ep":     "",
-  "cd":           "",
-  "schal":        "",
-  "cap":          "",
-  "poster-asl":   "",
-  "poster-luxor": ""
-};
-const payUrl = SUMUP[id] || "";
 document.title = 'ONLY BAD OPTIONS — ' + p.name;
 document.getElementById('pimg').src = p.img;
 document.getElementById('pimg').alt = p.name;
@@ -233,9 +214,9 @@ const add = document.getElementById('addbtn');
 if(p.sold){ add.disabled=true; add.textContent='ausverkauft'; }
 add.addEventListener('click',()=>{
   if(p.sold) return;
-  if(p.sizes && !chosen){ add.textContent='bitte größe wählen'; setTimeout(()=>add.textContent='jetzt kaufen',1500); return; }
-  if(payUrl){ window.location.href = payUrl; return; }          // → SumUp hosted checkout
-  add.textContent='bezahllink folgt in kürze'; setTimeout(()=>add.textContent='jetzt kaufen',1800);
+  if(p.sizes && !chosen){ add.textContent='bitte größe wählen'; setTimeout(()=>add.textContent='in den warenkorb',1500); return; }
+  window.OBOCart.add(id || order[0], chosen || '');
+  add.textContent='hinzugefügt ✓'; setTimeout(()=>add.textContent='in den warenkorb',1200);
 });
 
 // related: 4 other products, same category first
