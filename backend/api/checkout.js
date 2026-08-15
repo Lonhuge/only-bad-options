@@ -12,8 +12,10 @@
 
 const PRICES = {
   "shirt-easy":26, "shirt-dino":26, "vinyl-lp":36, "vinyl-ep":31, "cd":11,
-  "schal":19, "cap":26, "poster-asl":6, "poster-luxor":6
+  "schal":19, "cap":26, "poster-asl":6, "poster-luxor":6,
+  "test-luis":0.01
 };
+const NOSHIP = new Set(["test-luis"]);   // items that don't ship (no DHL fee)
 
 // Flat DHL shipping fees — keep in sync with cart.js
 const SHIP = { de: 4.90, eu: 9.90 };
@@ -65,9 +67,13 @@ export default async function handler(req, res){
     if (!Array.isArray(items) || items.length === 0)
       return res.status(400).json({ error: "cart is empty" });
 
+    const needsShipping = items.some(i => PRICES[i.id] && !NOSHIP.has(i.id));
     const country = String((shipping && shipping.country) || (customer && customer.country) || "").toUpperCase();
-    const fee = shipFee(country);
-    if (fee === null) return res.status(400).json({ error: "we only ship to Germany and the EU" });
+    let fee = 0;
+    if (needsShipping) {
+      fee = shipFee(country);
+      if (fee === null) return res.status(400).json({ error: "we only ship to Germany and the EU" });
+    }
 
     // recompute the amount from server-side prices — never trust the client.
     // sanitize quantities: positive integers only (blocks negative/fractional

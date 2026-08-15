@@ -14,6 +14,7 @@ const CAT = {
   "cap":         {name:'Vintage Cap „easy easy“',   price:26, img:'images/cap.jpg'},
   "poster-asl":  {name:'Poster „Alles so leid“ 2025',price:6, img:'images/poster-asl.jpg'},
   "poster-luxor":{name:'Poster „Luxor 2022“',       price:6, img:'images/poster-luxor.jpg'},
+  "test-luis":   {name:'luis ist ein pupskopf',      price:0.01, img:'images/logo.png', noShip:true},
 };
 
 /* ── SumUp checkout endpoint ────────────────────────────────────────

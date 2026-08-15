@@ -103,6 +103,7 @@
   const COUNTRIES = [["DE","Deutschland"],["AT","Österreich"],["BE","Belgien"],["BG","Bulgarien"],["HR","Kroatien"],["CY","Zypern"],["CZ","Tschechien"],["DK","Dänemark"],["EE","Estland"],["FI","Finnland"],["FR","Frankreich"],["GR","Griechenland"],["HU","Ungarn"],["IE","Irland"],["IT","Italien"],["LV","Lettland"],["LT","Litauen"],["LU","Luxemburg"],["MT","Malta"],["NL","Niederlande"],["PL","Polen"],["PT","Portugal"],["RO","Rumänien"],["SK","Slowakei"],["SI","Slowenien"],["ES","Spanien"],["SE","Schweden"]];
   const feeFor = c => c==="DE" ? SHIP.de : (EU.has(c) ? SHIP.eu : null);
   const itemsTotal = cart.reduce((s,i)=> s + (CAT[i.id]?CAT[i.id].price:0)*i.qty, 0);
+  const needsShip = cart.some(i => !(CAT[i.id] && CAT[i.id].noShip));
 
   const root = document.getElementById('root');
   if(!cart.length){ root.innerHTML = '<div class="empty">Dein Warenkorb ist leer.<br><br><a href="index.html#shop">← zum Shop</a></div>'; return; }
@@ -142,8 +143,8 @@
       <div class="formerr" id="formerr"></div>
       <div class="totals">
         <div class="trow"><span class="muted">Zwischensumme</span><span>${EUR(itemsTotal)}</span></div>
-        <div class="trow"><span class="muted">Versand (DHL)</span><span id="shipval">${EUR(SHIP.de)}</span></div>
-        <div class="trow grand"><span>Gesamt</span><span id="grandval">${EUR(itemsTotal+SHIP.de)}</span></div>
+        <div class="trow"><span class="muted">Versand (DHL)</span><span id="shipval">${needsShip ? EUR(SHIP.de) : 'kostenlos'}</span></div>
+        <div class="trow grand"><span>Gesamt</span><span id="grandval">${EUR(itemsTotal + (needsShip ? SHIP.de : 0))}</span></div>
         <button class="paybtn" id="pay">zur zahlung · SumUp</button>
         <div class="paynote">Weiterleitung zu SumUp · Karte & Apple Pay</div>
       </div>
@@ -153,6 +154,7 @@
   const sel = document.querySelector('select[name=country]');
   const shipEl = document.getElementById('shipval'), grandEl = document.getElementById('grandval');
   function refresh(){
+    if(!needsShip){ shipEl.textContent='kostenlos'; grandEl.textContent=EUR(itemsTotal); return; }
     const f = feeFor(sel.value);
     shipEl.textContent = f===null ? '—' : EUR(f);
     grandEl.textContent = f===null ? EUR(itemsTotal) : EUR(itemsTotal + f);
@@ -167,7 +169,7 @@
     clearErr();
     const form = document.getElementById('co');
     const d = Object.fromEntries(new FormData(form).entries());
-    const required = ['email','firstName','lastName','street','plz','city','country'];
+    const required = needsShip ? ['email','firstName','lastName','street','plz','city','country'] : ['email'];
     let bad = required.filter(k => !((d[k]||'').trim()));
     if(!/^\S+@\S+\.\S+$/.test(d.email||'')) if(!bad.includes('email')) bad.push('email');
     if(bad.length){
@@ -175,8 +177,10 @@
       showErr('Bitte fülle die markierten Pflichtfelder aus.');
       return;
     }
-    const fee = feeFor(d.country);
-    if(fee===null){ showErr('Dieses Land beliefern wir aktuell nicht (nur DE & EU).'); return; }
+    if(needsShip){
+      const fee = feeFor(d.country);
+      if(fee===null){ showErr('Dieses Land beliefern wir aktuell nicht (nur DE & EU).'); return; }
+    }
 
     const btn = document.getElementById('pay'); btn.disabled=true; btn.textContent='einen moment…';
     const items = cart.map(i=>({id:i.id,size:i.size,qty:i.qty}));
