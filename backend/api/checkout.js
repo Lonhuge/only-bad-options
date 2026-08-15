@@ -13,7 +13,7 @@
 const PRICES = {
   "shirt-easy":26, "shirt-dino":26, "vinyl-lp":36, "vinyl-ep":31, "cd":11,
   "schal":19, "cap":26, "poster-asl":6, "poster-luxor":6,
-  "test-luis":0.01
+  "test-luis":1
 };
 const NOSHIP = new Set(["test-luis"]);   // items that don't ship (no DHL fee)
 
