@@ -21,6 +21,10 @@ const CAT = {
    While empty, "zur kasse" shows a friendly "coming soon" note.        */
 const CHECKOUT_URL = "https://only-bad-options.vercel.app/api/checkout";
 
+// Flat DHL shipping fees (display only — the backend re-computes these when
+// charging). Adjust to your real DHL rates. de = Germany, eu = rest of EU.
+const SHIP = { de: 4.90, eu: 9.90 };
+
 const KEY='obo_cart';
 const euro=n=> n.toFixed(2).replace('.',',')+' €';
 const get=()=>{ try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return[]} };
@@ -111,18 +115,11 @@ function update(){ document.querySelectorAll('.cartcount').forEach(e=>e.textCont
 function note(m){ const n=document.querySelector('#obo-cart .oc-note'); if(n){n.textContent=m; n.style.display='block';} }
 
 function checkout(){
-  const items=get(); if(!items.length)return;
-  const btn=document.querySelector('#obo-cart .oc-checkout');
-  if(!CHECKOUT_URL){ note('Checkout wird gerade eingerichtet — bald verfügbar. 💛'); return; }
-  btn.textContent='einen moment…'; btn.disabled=true;
-  fetch(CHECKOUT_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({items:items.map(i=>({id:i.id,name:(CAT[i.id]||{}).name,size:i.size,qty:i.qty,price:(CAT[i.id]||{}).price})),total:total()})})
-   .then(r=>r.json()).then(d=>{ const u=d.checkout_url||d.hosted_checkout_url||d.redirect;
-     if(u){ location.href=u; } else { note('Zahlung konnte nicht gestartet werden.'); btn.textContent='zur kasse · SumUp'; btn.disabled=false; } })
-   .catch(()=>{ note('Netzwerkfehler. Bitte erneut versuchen.'); btn.textContent='zur kasse · SumUp'; btn.disabled=false; });
+  if(!get().length) return;
+  location.href = 'checkout.html';   // collect shipping + contact, then → SumUp
 }
 
-window.OBOCart={add:add,open:open,close:close,count:count,total:total};
+window.OBOCart={add:add,open:open,close:close,count:count,total:total,get:get,cat:CAT,checkoutUrl:CHECKOUT_URL,ship:SHIP};
 
 document.addEventListener('DOMContentLoaded',function(){
   build(); update();

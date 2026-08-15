@@ -15,6 +15,28 @@ const PRICES = {
   "schal":19, "cap":26, "poster-asl":6, "poster-luxor":6
 };
 
+// Flat DHL shipping fees — keep in sync with cart.js
+const SHIP = { de: 4.90, eu: 9.90 };
+const EU = new Set(["AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE"]);
+function shipFee(c){ return c === "DE" ? SHIP.de : (EU.has(c) ? SHIP.eu : null); }
+
+// Compact order description — carries the shipping address so it's visible on
+// the SumUp transaction and recoverable via the webhook (no database needed).
+function buildDescription(qty, c, country){
+  let d = `OBO · ${qty} Artikel`;
+  if (c && (c.firstName || c.lastName)) {
+    const addr = [
+      `${c.firstName||""} ${c.lastName||""}`.trim(),
+      `${c.street||""}${c.zusatz ? " / " + c.zusatz : ""}`.trim(),
+      `${c.plz||""} ${c.city||""}`.trim(),
+      country
+    ].filter(Boolean).join(", ");
+    d += ` · Versand: ${addr}`;
+    if (c.email) d += ` · ${c.email}`;
+  }
+  return d.slice(0, 250);
+}
+
 // Best-effort rate limit (per warm instance). Deters casual spam of the
 // endpoint. For hard guarantees across instances use Upstash / Vercel KV.
 const HITS = new Map();               // ip -> [timestamps]
@@ -39,9 +61,13 @@ export default async function handler(req, res){
   if (rateLimited(ip)) return res.status(429).json({ error: "too many requests" });
 
   try {
-    const { items } = req.body || {};
+    const { items, shipping, customer } = req.body || {};
     if (!Array.isArray(items) || items.length === 0)
       return res.status(400).json({ error: "cart is empty" });
+
+    const country = String((shipping && shipping.country) || (customer && customer.country) || "").toUpperCase();
+    const fee = shipFee(country);
+    if (fee === null) return res.status(400).json({ error: "we only ship to Germany and the EU" });
 
     // recompute the amount from server-side prices — never trust the client.
     // sanitize quantities: positive integers only (blocks negative/fractional
@@ -55,6 +81,7 @@ export default async function handler(req, res){
       qty += q;
     }
     if (qty === 0 || amount <= 0) return res.status(400).json({ error: "invalid cart" });
+    amount += fee;   // flat DHL shipping
 
     const r = await fetch("https://api.sumup.com/v0.1/checkouts", {
       method: "POST",
@@ -67,7 +94,7 @@ export default async function handler(req, res){
         amount: Number(amount.toFixed(2)),
         currency: "EUR",
         merchant_code: process.env.SUMUP_MERCHANT_CODE,
-        description: `ONLY BAD OPTIONS — ${qty} Artikel`,
+        description: buildDescription(qty, customer, country),
         hosted_checkout: { enabled: true },
         redirect_url: process.env.SUCCESS_URL || "https://lonhuge.github.io/only-bad-options/",
         return_url: process.env.WEBHOOK_URL   // server-to-server payment webhook (optional)
