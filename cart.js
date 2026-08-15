@@ -19,7 +19,7 @@ const CAT = {
 /* ── SumUp checkout endpoint ────────────────────────────────────────
    Set this to your deployed serverless function (see backend/README.md).
    While empty, "zur kasse" shows a friendly "coming soon" note.        */
-const CHECKOUT_URL = "";
+const CHECKOUT_URL = "https://only-bad-options.vercel.app/api/checkout";
 
 const KEY='obo_cart';
 const euro=n=> n.toFixed(2).replace('.',',')+' €';
