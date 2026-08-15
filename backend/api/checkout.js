@@ -28,10 +28,18 @@ export default async function handler(req, res){
     if (!Array.isArray(items) || items.length === 0)
       return res.status(400).json({ error: "cart is empty" });
 
-    // recompute the amount from server-side prices — never trust the client
-    const amount = items.reduce((sum, i) => sum + (PRICES[i.id] || 0) * Number(i.qty || 0), 0);
-    if (amount <= 0) return res.status(400).json({ error: "invalid amount" });
-    const qty = items.reduce((s, i) => s + Number(i.qty || 0), 0);
+    // recompute the amount from server-side prices — never trust the client.
+    // sanitize quantities: positive integers only (blocks negative/fractional
+    // qty from lowering the charge) and cap per line to stop abuse.
+    let amount = 0, qty = 0;
+    for (const i of items) {
+      const price = PRICES[i.id];
+      const q = Math.floor(Number(i.qty));
+      if (!price || !Number.isInteger(q) || q < 1 || q > 100) continue; // ignore invalid lines
+      amount += price * q;
+      qty += q;
+    }
+    if (qty === 0 || amount <= 0) return res.status(400).json({ error: "invalid cart" });
 
     const r = await fetch("https://api.sumup.com/v0.1/checkouts", {
       method: "POST",
