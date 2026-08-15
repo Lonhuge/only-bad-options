@@ -15,6 +15,18 @@ const PRICES = {
   "schal":19, "cap":26, "poster-asl":6, "poster-luxor":6
 };
 
+// Best-effort rate limit (per warm instance). Deters casual spam of the
+// endpoint. For hard guarantees across instances use Upstash / Vercel KV.
+const HITS = new Map();               // ip -> [timestamps]
+const RL_MAX = 15, RL_WINDOW = 60000; // 15 requests / minute / IP
+function rateLimited(ip){
+  const now = Date.now();
+  const arr = (HITS.get(ip) || []).filter(t => now - t < RL_WINDOW);
+  arr.push(now); HITS.set(ip, arr);
+  if (HITS.size > 5000) HITS.clear();
+  return arr.length > RL_MAX;
+}
+
 export default async function handler(req, res){
   const origin = process.env.ALLOW_ORIGIN || "https://lonhuge.github.io";
   res.setHeader("Access-Control-Allow-Origin", origin);
@@ -22,6 +34,9 @@ export default async function handler(req, res){
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST")    return res.status(405).json({ error: "method not allowed" });
+
+  const ip = (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
+  if (rateLimited(ip)) return res.status(429).json({ error: "too many requests" });
 
   try {
     const { items } = req.body || {};
@@ -54,7 +69,8 @@ export default async function handler(req, res){
         merchant_code: process.env.SUMUP_MERCHANT_CODE,
         description: `ONLY BAD OPTIONS — ${qty} Artikel`,
         hosted_checkout: { enabled: true },
-        redirect_url: process.env.SUCCESS_URL || "https://lonhuge.github.io/only-bad-options/"
+        redirect_url: process.env.SUCCESS_URL || "https://lonhuge.github.io/only-bad-options/",
+        return_url: process.env.WEBHOOK_URL   // server-to-server payment webhook (optional)
       })
     });
 
