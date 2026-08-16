@@ -91,9 +91,10 @@
   .tbtn:hover{background:var(--accent);color:#fff}
 
   /* hero */
-  .hero{position:relative;height:min(80vh,700px);min-height:440px;overflow:hidden;background:#000}
-  .hero img{width:100%;height:100%;object-fit:cover;object-position:center 30%}
-  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(255,255,255,.55) 78%,rgba(255,255,255,1) 100%)}
+  .hero{position:relative;height:min(64vh,560px);min-height:360px;overflow:hidden;background:#fff;
+    padding:clamp(18px,4vw,52px);border-bottom:1px solid var(--line)}
+  .hero img{width:100%;height:100%;object-fit:contain;object-position:center}
+  .hero::after{content:none}
   .hero .cta{position:absolute;left:0;right:0;bottom:0;z-index:3;padding-bottom:46px}
   .hero .cta .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#1a1a1a;margin-bottom:14px}
   .hero .cta h1{font-family:var(--display);text-transform:uppercase;line-height:.86;letter-spacing:-.02em;
@@ -213,7 +214,7 @@
 </header>
 
 <div class="hero">
-  <img src="images/hero.jpg" alt="easy easy — only bad options">
+  <img src="images/hero.png" alt="Want bad option? — Only Bad Options">
 </div>
 
 <main class="wrap" id="shop">
