@@ -76,6 +76,12 @@
   .cartcount{position:absolute;top:-7px;right:-9px;background:var(--accent);color:#000;font-family:var(--mono);font-size:9px;font-weight:700;
     min-width:15px;height:15px;border-radius:9px;display:grid;place-items:center;padding:0 3px}
   .burger{display:none}
+  .mobnav{display:none;background:var(--bg)}
+  .mobnav.on{display:block;border-top:1px solid var(--line)}
+  .mobnav a{display:block;padding:14px 26px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+  .mobnav a.sub{padding-left:42px;color:var(--muted)}
+  .mobnav a:active{background:var(--panel)}
+  @media(min-width:641px){.mobnav{display:none!important}}
 
   /* tickets / tour */
   .tour .seclabel{align-items:center}
@@ -210,6 +216,17 @@
       <svg class="icn burger" viewBox="0 0 24 24"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>
     </div>
   </div>
+  <nav class="mobnav" id="mobnav">
+    <a href="#">start</a>
+    <a href="#shop">shop</a>
+    <a class="sub" href="#shop" data-filter="shirts">shirts</a>
+    <a class="sub" href="#shop" data-filter="vinyl">vinyl / cd</a>
+    <a class="sub" href="#shop" data-filter="posters">poster</a>
+    <a class="sub" href="#shop" data-filter="apparel">apparel</a>
+    <a href="#tickets">tickets</a>
+    <a href="#social">social</a>
+    <a href="#kontakt">kontakt</a>
+  </nav>
 </header>
 
 <div class="hero">
@@ -385,7 +402,7 @@
 
 <script>
 (function(){
-  var links=document.querySelectorAll('.dropdown a[data-filter]');
+  var links=document.querySelectorAll('[data-filter]');
   var cards=document.querySelectorAll('.card[data-cat]');
   var secs=document.querySelectorAll('main section.block');
   links.forEach(function(l){
@@ -405,6 +422,13 @@
       if(shop) shop.scrollIntoView({behavior:'smooth'});
     });
   });
+
+  // mobile menu — hamburger toggles the nav; any link closes it
+  var burger=document.querySelector('.burger'), mob=document.getElementById('mobnav');
+  if(burger&&mob){
+    burger.addEventListener('click',function(){ mob.classList.toggle('on'); });
+    mob.querySelectorAll('a').forEach(function(a){ a.addEventListener('click',function(){ mob.classList.remove('on'); }); });
+  }
 })();
 </script>
 <script src="cart.js"></script>
