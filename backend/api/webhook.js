@@ -40,8 +40,8 @@ export default async function handler(req, res) {
         at: new Date().toISOString()
       };
       console.log("✅ PAID ORDER", JSON.stringify(order));   // visible in Vercel logs
-      await notify(order);
-      // ↳ add your fulfillment here (save to DB / Google Sheet / send email)
+      await markPaid(co.checkout_reference, co.amount);      // Sheet → status "paid" + email you
+      await notify(order);                                   // optional Discord/Slack ping
     }
     // PENDING / FAILED / EXPIRED → nothing to do; SumUp will notify again on change
 
@@ -50,6 +50,18 @@ export default async function handler(req, res) {
     console.error("webhook error", e);
     return res.status(500).end();             // transient → let SumUp retry
   }
+}
+
+// Tell the Google Sheet the order is paid → it flips the row to "paid" and
+// emails you the full order + shipping address.
+async function markPaid(ref, total) {
+  if (!process.env.SHEET_URL || !ref) return;
+  try {
+    await fetch(process.env.SHEET_URL, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: process.env.SHEET_SECRET, action: "paid", ref, total })
+    });
+  } catch (e) { console.error("sheet paid failed", e); }
 }
 
 // Optional: ping a Discord/Slack incoming webhook so you hear about orders.

@@ -36,6 +36,26 @@ const CHECKOUT_URL = "https://obo-checkout.vercel.app/api/checkout";
 Commit + push — the "zur kasse · SumUp" button now creates a real checkout and
 redirects the customer to SumUp's secure payment page.
 
+## Order log + email (Google Sheet)
+Every order is written to a Google Sheet you own, and you get an email the moment
+it's paid — with the full item list and shipping address. Free, no third-party
+service (sends from your own Google account).
+
+1. Create a Google Sheet (e.g. "OBO Bestellungen").
+2. In it: **Extensions → Apps Script**, delete the sample, and paste
+   [`order-sheet.gs`](order-sheet.gs).
+3. At the top of that script set **`NOTIFY_EMAIL`** (where order emails go) and
+   **`SECRET`** (any random word).
+4. **Deploy → New deployment → Web app** — *Execute as: Me*, *Who has access: Anyone* —
+   and copy the `/exec` URL. (First run asks you to authorize sending email — allow it.)
+5. In Vercel add env vars and **redeploy**:
+   - `SHEET_URL`    = that `/exec` URL
+   - `SHEET_SECRET` = the same `SECRET` you set in the script
+
+Flow: `checkout.js` writes each order as **pending** at checkout; the webhook flips
+it to **paid** and triggers the email once SumUp confirms payment. Abandoned
+checkouts stay as `pending` rows — filter the Status column for `paid`.
+
 ## Payment confirmation (the "did they actually pay?" part)
 - `checkout.js` passes `return_url = WEBHOOK_URL` when creating a checkout, so
   SumUp POSTs `api/webhook` whenever the checkout's status changes.

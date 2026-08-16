@@ -39,6 +39,35 @@ function buildDescription(qty, c, country){
   return d.slice(0, 250);
 }
 
+// Readable product names for the order log / email.
+const NAMES = {
+  "shirt-easy":"T-Shirt „easy easy“", "shirt-dino":"T-Shirt „Dino“",
+  "vinyl-lp":"Vinyl „easy easy“ (LP)", "vinyl-ep":"Echoes Vol. 1 & 2 (EP)",
+  "cd":"CD „easy easy“ Deluxe", "schal":"Schal „EASY“", "cap":"Vintage Cap „easy easy“",
+  "poster-asl":"Poster „Alles so leid“ 2025", "poster-luxor":"Poster „Luxor 2022“",
+  "test-luis":"luis ist ein pupskopf"
+};
+
+// Append the order (status "pending") to the Google Sheet via Apps Script.
+// Best effort — must never block the checkout.
+async function logOrder(ref, items, customer, country, subtotal, shipping, total){
+  if (!process.env.SHEET_URL) return;
+  try {
+    const lines = items
+      .filter(i => PRICES[i.id])
+      .map(i => ({ name: NAMES[i.id] || i.id, size: i.size || "", qty: Math.floor(Number(i.qty)) || 0 }));
+    await fetch(process.env.SHEET_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: process.env.SHEET_SECRET, action: "create", ref,
+        items: lines, subtotal, shipping, total,
+        customer: Object.assign({ country }, customer || {})
+      })
+    });
+  } catch (e) { console.error("sheet log failed", e); }
+}
+
 // Best-effort rate limit (per warm instance). Deters casual spam of the
 // endpoint. For hard guarantees across instances use Upstash / Vercel KV.
 const HITS = new Map();               // ip -> [timestamps]
@@ -78,16 +107,18 @@ export default async function handler(req, res){
     // recompute the amount from server-side prices — never trust the client.
     // sanitize quantities: positive integers only (blocks negative/fractional
     // qty from lowering the charge) and cap per line to stop abuse.
-    let amount = 0, qty = 0;
+    let subtotal = 0, qty = 0;
     for (const i of items) {
       const price = PRICES[i.id];
       const q = Math.floor(Number(i.qty));
       if (!price || !Number.isInteger(q) || q < 1 || q > 100) continue; // ignore invalid lines
-      amount += price * q;
+      subtotal += price * q;
       qty += q;
     }
-    if (qty === 0 || amount <= 0) return res.status(400).json({ error: "invalid cart" });
-    amount += fee;   // flat DHL shipping
+    if (qty === 0 || subtotal <= 0) return res.status(400).json({ error: "invalid cart" });
+    const amount = subtotal + fee;   // items + flat DHL shipping
+
+    const ref = "obo-" + Date.now();
 
     const r = await fetch("https://api.sumup.com/v0.1/checkouts", {
       method: "POST",
@@ -96,7 +127,7 @@ export default async function handler(req, res){
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        checkout_reference: "obo-" + Date.now(),
+        checkout_reference: ref,
         amount: Number(amount.toFixed(2)),
         currency: "EUR",
         merchant_code: process.env.SUMUP_MERCHANT_CODE,
@@ -109,6 +140,9 @@ export default async function handler(req, res){
 
     const data = await r.json();
     if (!r.ok) return res.status(502).json({ error: "sumup error", detail: data });
+
+    // log the order to the Google Sheet (best effort — never blocks checkout)
+    await logOrder(ref, items, customer, country, subtotal, fee, amount);
 
     // cart.js redirects the browser to checkout_url
     return res.status(200).json({ checkout_url: data.hosted_checkout_url, id: data.id });
