@@ -14,3 +14,6 @@ python3 -m http.server 8000
 ```
 
 Payments are not wired yet (SumUp integration is the next step).
+
+## Ads reporting
+`marketing/meta_ads_insights.py` pulls Instagram/Facebook ad metrics live from the Meta Marketing API — setup in [`marketing/README.md`](marketing/README.md).
