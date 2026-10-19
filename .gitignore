@@ -7,3 +7,6 @@ __pycache__/
 
 # ad reports pulled from the Meta API (contain spend/revenue)
 marketing/reports/
+
+# Abrechnungen mit Gagen (nie ins öffentliche Repo)
+marketing/private/
